@@ -27,7 +27,7 @@ def gen_arch_phi(opt):
   elif act == "lrelu":   act = nn.LeakyReLU
   else: raise ValueError(f"unexpected activation for phi {act}")
   
-  phi=Phi(nn.ModuleList(
+  phi=deepset.Phi(nn.ModuleList(
       [nn.Linear(784,300),act(), 
       nn.Linear(300,100), act(), 
       nn.Linear(100,10)]))
@@ -52,7 +52,7 @@ def gen_arch_rho(opt):
   else:
     raise ValueError(f"unexpected activation for rho {act}")
 
-  return nn.ModuleList(nn.Linear(10,1))
+  return deepset.Rho(nn.ModuleList(nn.Linear(10,1)))
 
 
 

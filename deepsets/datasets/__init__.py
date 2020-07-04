@@ -1,1 +1,1 @@
-__all__=["convtrain","datautils","MnistSumDatasets"]
+__all__=["datautils","MnistSumDatasets"]
