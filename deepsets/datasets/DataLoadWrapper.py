@@ -29,8 +29,7 @@ def load_mnist_dataset(root:str, download : bool, train=True):
 
 class DataLoadWrapper:
 
-  """This is a standin to be passed to the engine via the state dict, 
-  yielding the subsets via iter calls."""
+  """This is a standin to be passed to the engine via the state dict"""
   def __init__(self, dataMain, targets, indices:list=None, minset:int=2, maxset:int=10):
     self.datamain = dataMain
     self.targets = targets
@@ -42,13 +41,13 @@ class DataLoadWrapper:
     else:
       self.indices = self.gen_indices(self.datamain, self.datamain.size(0), 2, 10)
     self.length = len(self.indices)
-
   
   def __getitem__(self,index):
-    data = self.shuf(self.datamain[self.indices[index].indices])\
+    data = self.datamain[self.shuf(self.indices[index].indices)]\
                .clone()\
                .detach()\
                .to(dtype=torch.float32) / 255
+
 
     targets = self.targets[self.indices[index].indices].sum() * torch.ones(data.size(0),dtype=torch.float32)
     return data, targets

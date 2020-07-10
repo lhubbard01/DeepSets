@@ -22,12 +22,8 @@ class Engine:
                   "on_end_epoch", "on_end"]
     self.hooks = {k : lambda state: None for k in hook_names } 
     """default to None so if used in training loop without having been hooked,will still run"""
-
-  def train(self,state=None, **kwargs):
-    if state:
-        assert isinstance(state, dict), "runtime expects either a dictionary or an object that inherits from it"
-    if not state:
-      state = {
+  def train(self,**kwargs):
+    state = {
         "model"         : kwargs["model"],
         "loader"        : kwargs["loader"],
         "optim_method"  : kwargs["optimization_method"],
@@ -73,7 +69,6 @@ class Engine:
             self.hooks["on_update"](state)
       self.hooks["on_end_epoch"](state)
     self.hooks["on_end"](state)
-
 
 
 

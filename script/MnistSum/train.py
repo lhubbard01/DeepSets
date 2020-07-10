@@ -41,16 +41,18 @@ separator = "*" * 80
 
 def main(opt):
   opt["batch_size"] = opt["train.batch_size"]
+
   if not os.path.isdir(opt['log.experiment_directory']):
     os.makedirs(opt['log.experiment_directory'])
+
   with open(os.path.join(opt['log.experiment_directory'], 'options.json'),'w') as f:
     json.dump(opt,f)
     f.write("\n"+separator+"\n")
 
+
   trace = os.path.join(opt["log.experiment_directory"], "trace_file.txt")
   opt["log.fields"] = opt["log.fields"].split(",")
 
-  
   def trainval(opt):
     #python import system is ass, look up mutual top level imports in python
     from deepsets import datasets as ds
@@ -64,8 +66,9 @@ def main(opt):
 
   train_loader = trainval(opt)
   val_loader = None
-  meters ={"train" : {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}}
+
   
+  meters ={"train" : {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}}
   if val_loader is not None:
     meters["validation"] = {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}
 
@@ -84,8 +87,10 @@ def main(opt):
   def on_start(state):
     if opt["model.cuda"]:
       state["loader"].datamain.cuda(), state["loader"].targets.cuda()
+
     if os.path.isfile(trace):
       os.remove(trace)
+
   engine.hooks["on_start"] = on_start
 
 
@@ -120,6 +125,7 @@ def main(opt):
 
 
 
+
   def on_end_epoch(hook_state, state):
     if val_loader is not None:
       if "best_loss" not in hook_state:
@@ -133,9 +139,12 @@ def main(opt):
     meter_values = log_utils.extract_meter_values(meters)
     update_str = "Epoch {:02d}: {:s}".format(state["epoch"],
                               log_utils.render_meter_values(meter_values))
+    
     print(update_str)
+
     meter_values["epoch"] = state["epoch"]
     state["loader"].shuf(state["loader"].indices)
+
     with open(trace, "a") as f:
       json.dump(meter_values,f)
       f.write("\n")
@@ -153,21 +162,28 @@ def main(opt):
             
             if opt["data.cuda"]:
               state["model"].cuda()
+      
       else:
           state["model"].cpu()
           torch.save(state["model"],
                      os.path.join(opt["log.experiment_directory"], "bestModel.pt"))
+          
           if opt["data.cuda"]:
             state["model"].cuda()
+    
     else:
           state["model"].cpu()
           torch.save(state["model"],
                      os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "model.pt"))
+
           if opt["data.cuda"]:
             state["model"].cuda()
-    state["epoch"] += 1
-  engine.hooks["on_end_epoch"] = partial(on_end_epoch, {})
+    
 
+    state["epoch"] += 1
+  #End on_end_epoch 
+
+  engine.hooks["on_end_epoch"] = partial(on_end_epoch, {})
   deepset_mnist_sum = load_model(opt)
   print("model loaded... running...")
   engine.train( 
