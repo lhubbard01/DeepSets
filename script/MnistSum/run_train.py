@@ -28,6 +28,8 @@ class Defaults:
     }
     self.model = {
         "name"                : "DeepSet",
+        "phi"                 : None,
+        "rho"                 : None,
         "path"                : None, #"./exp/",
         "path.epoch"          : 0,
         "cuda"                : False,
@@ -40,6 +42,7 @@ class Defaults:
     self.train = {
         "epochs"              : 100,
         "visuals"             : False,
+        "reuse"               : False,
         "optimization_method" : "adam",
         "cuda"                : False,
         "learning_rate"       : 1e-4,
@@ -80,6 +83,10 @@ parser.add_argument("--model.path",type=str,default=modelD["path"],
                     help=f"path from which to load or save model. default={modelD['path']}")
 parser.add_argument("--model.path.epoch",type=int,default=modelD["path.epoch"],
                     help=f"will soon use regex to do this, in meantime, specify corresponding model to load from epoch to resume training, default={modelD['path.epoch']}")
+parser.add_argument("model.set_rho", type=str,default=None,
+                    help=f"load a model from this path to plug into the deepset as the rho network, default={modelD['rho']}")
+parser.add_argument("model.set_phi", type=str,default=None,
+                    help=f"load a model from this path to plug into the deepset as the phi network, default={modelD['phi']}")
 parser.add_argument("--model.cuda",action="store_true", 
                     help="Set this flag to train model using cuda capable device, default is False")
 parser.add_argument("--model.freeze_phi",action="store_true",
@@ -98,7 +105,8 @@ parser.add_argument("--model.deepset_activations",type=str,default=modelD["deeps
 #train
 trainD = defaults.train
 parser.add_argument("--train.epochs",type=int,default=trainD["epochs"],help=f"number of overall training epochs, default {trainD['epochs']}")
-#parser.add_argument("--train.visuals",action="store_true")
+parser.add_argument("--train.reuse", action="store_true", help="Set this flag to reuse previously generated subsets. Default is False" )
+
 parser.add_argument("--train.optimization_method",type=str,default=trainD["optimization_method"],
                     help=f"optimiztation method to use during training. will be upgraded to use all available in torch. currently available are adam and sgd. default={trainD['optimization_method']}")
 parser.add_argument("--train.learning_rate",type=float,default=trainD["learning_rate"],
