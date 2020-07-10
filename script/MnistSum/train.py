@@ -1,8 +1,8 @@
 """influenced by Jake Snell et al Prototypical networks for few shot learning,
 PrototypicalNetworks/scripts/train/few_shot/train.py"""
 
-
 import os
+import pickle 
 import json
 from functools import partial
 from tqdm import tqdm
@@ -21,7 +21,6 @@ import deepsets.utils.model as model_utils
 import deepsets.utils.log as log_utils
 
 import deepsets.model.deepset as deepset
-from deepsets.model.deepset import Phi, Rho
 from trainRuntimeHelpers import *
 from deepsets.datasets.DataLoadWrapper import DataLoadWrapper, load_mnist_dataset
 
@@ -54,14 +53,14 @@ def main(opt):
   opt["log.fields"] = opt["log.fields"].split(",")
 
   def trainval(opt):
-    #python import system is ass, look up mutual top level imports in python
-    from deepsets import datasets as ds
-    #if opt["data.train_validation"]:
-    #  train_loader = DataLoadload_mnist_dataset("./mnist/",download=True,train=True)
-    #  val_loader   = DataLoadWrapper(
-    #else:
     data = load_mnist_dataset(root="./mnist/",train=True,download=True)
-    train_loader = DataLoadWrapper(data.data,data.targets, minset=2,maxset=10 )
+    if opt["train.reuse"] is True:
+      with open(os.path.join(opt["log.experiment_directory"], "training_set"), "rb") as f:
+        train_loader = pickle.load(f)
+    else:
+      train_loader = DataLoadWrapper(data.data,data.targets, minset=2,maxset=10 )
+      with open(os.path.join(opt["log.experiment_directory"], "traing_set"), "wb") as f:
+        pickle.dump(train_loader,f)
     return train_loader
 
   train_loader = trainval(opt)
@@ -158,25 +157,21 @@ def main(opt):
 
             state["model"].cpu()
             torch.save(state["model"], 
-                       os.path.join(opt["log.experiment_directory"], "bestModel.pt"))
-            
-            if opt["data.cuda"]:
+                       os.path.join(opt["log.experiment_directory"],str(state["epoch"]) + "__" + opt["model.name"] + ".pt"))
+            if opt["model.cuda"]:
               state["model"].cuda()
-      
       else:
           state["model"].cpu()
           torch.save(state["model"],
-                     os.path.join(opt["log.experiment_directory"], "bestModel.pt"))
+                     os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "__" + opt["model.name"] + ".pt"))
           
           if opt["data.cuda"]:
             state["model"].cuda()
-    
     else:
           state["model"].cpu()
           torch.save(state["model"],
                      os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "__" + opt["model.name"]+".pt"))
-
-          if opt["data.cuda"]:
+          if opt["model.cuda"]:
             state["model"].cuda()
     
 
