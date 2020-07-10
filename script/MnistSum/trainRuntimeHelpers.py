@@ -31,10 +31,6 @@ def gen_arch_phi(opt):
       [nn.Linear(784,300),act(), 
       nn.Linear(300,100), act(), 
       nn.Linear(100,10)]))
-  if opt["train.device"] is False: 
-    phi.cpu() 
-  else:
-    phi.cuda()
   return phi
 
 def gen_arch_rho(opt):

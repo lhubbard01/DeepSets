@@ -174,7 +174,7 @@ def main(opt):
     else:
           state["model"].cpu()
           torch.save(state["model"],
-                     os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "model.pt"))
+                     os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "__" + opt["model.name"]+".pt"))
 
           if opt["data.cuda"]:
             state["model"].cuda()
