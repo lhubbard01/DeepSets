@@ -59,7 +59,7 @@ def main(opt):
         train_loader = pickle.load(f)
     else:
       train_loader = DataLoadWrapper(data.data,data.targets, minset=2,maxset=10 )
-      with open(os.path.join(opt["log.experiment_directory"], "traing_set"), "wb") as f:
+      with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)
 
     return train_loader

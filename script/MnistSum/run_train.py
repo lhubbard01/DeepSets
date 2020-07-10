@@ -83,9 +83,9 @@ parser.add_argument("--model.path",type=str,default=modelD["path"],
                     help=f"path from which to load or save model. default={modelD['path']}")
 parser.add_argument("--model.path.epoch",type=int,default=modelD["path.epoch"],
                     help=f"will soon use regex to do this, in meantime, specify corresponding model to load from epoch to resume training, default={modelD['path.epoch']}")
-parser.add_argument("model.set_rho", type=str,default=None,
+parser.add_argument("--model.set_rho", type=str,default=None,
                     help=f"load a model from this path to plug into the deepset as the rho network, default={modelD['rho']}")
-parser.add_argument("model.set_phi", type=str,default=None,
+parser.add_argument("--model.set_phi", type=str,default=None,
                     help=f"load a model from this path to plug into the deepset as the phi network, default={modelD['phi']}")
 parser.add_argument("--model.cuda",action="store_true", 
                     help="Set this flag to train model using cuda capable device, default is False")
