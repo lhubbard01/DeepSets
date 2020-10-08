@@ -52,24 +52,82 @@ def main(opt):
   trace = os.path.join(opt["log.experiment_directory"], "trace_file.txt")
   opt["log.fields"] = opt["log.fields"].split(",")
 
-  def trainval(opt):
-    data = load_mnist_dataset(root="./mnist/",train=True,download=True)
+  dataset = load_mnist_dataset(root="./mnist/",train=True,download=True)
+
+  
+
+
+  def train_load(opt):
     if opt["train.reuse"] is True:
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "rb") as f:
         train_loader = pickle.load(f)
-    else:
-      train_loader = DataLoadWrapper(data.data,data.targets, minset=2,maxset=10 )
+
+    elif not opt["train.tv_split"]:
+      train_loader = DataLoadWrapper(dataset.data,
+                                     dataset.targets, 
+                                     minset = 2,
+                                     maxset = 10 )
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)
 
-    return train_loader
+    else: 
+      return None
 
-  train_loader = trainval(opt)
-  val_loader = None
+    return train_loader
+  
 
   
+
+
+  def valid_load(opt):
+    if opt["train.reuse"]:
+      try:
+        with open(os.path.join(opt["log.experiment_directory"], "valid_set"), "rb") as f:
+          valid_loader = pickle.load(f)
+      except Exception as e:
+        raise e
+    return valid_loader
+
+
+
+  def gen_tv_split(opt):
+    trs = torch.utils.data.random_split(dataset, [48000,12000])
+    print(trs)
+    only_indices = lambda X: X.indices
+    train_split, valid_split = list(map(only_indices, trs))
+
+    train_loader =  DataLoadWrapper(dataset.data[train_split], 
+                                    dataset.targets[train_split],
+                                    minset = 2,
+                                    maxset = 10)
+    valid_loader = DataLoadWrapper(dataset.data[valid_split], 
+                                   dataset.targets[valid_split],
+                                   minset = 2,
+                                   maxset = 10)
+    
+    with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
+      pickle.dump(train_loader,f)
+    
+    with open(os.path.join(opt["log.experiment_directory"], "valid_set"), "wb") as f:
+      pickle.dump(valid_loader,f)
+
+    return train_loader, valid_loader
+
+  train_loader = train_load(opt)
+  valid_loader = None
+
+  if opt["train.tv_split"] and opt["train.reuse"]:
+    valid_loader = valid_load(opt)
+  
+  if opt["train.tv_split"] and not opt["train.reuse"]:
+    train_loader, valid_loader = gen_tv_split(opt) 
+
+
+
+
+
   meters ={"train" : {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}}
-  if val_loader is not None:
+  if valid_loader is not None:
     meters["validation"] = {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}
 
 
@@ -79,6 +137,11 @@ def main(opt):
 
 
   engine = Engine()
+
+
+
+
+
 
 
   def on_start_with_visuals(state):
@@ -127,12 +190,12 @@ def main(opt):
 
 
   def on_end_epoch(hook_state, state):
-    if val_loader is not None:
+    if valid_loader is not None:
       if "best_loss" not in hook_state:
         hook_state["best_loss"] = np.inf
       
       model_utils.evaluate(state,
-                             val_loader,
+                             valid_loader,
                              meters["validation"],
                              desc="Epoch {:d} validation run ".format(state["epoch"]))
 
@@ -143,14 +206,15 @@ def main(opt):
     print(update_str)
 
     meter_values["epoch"] = state["epoch"]
-    state["loader"].shuf(state["loader"].indices)
+    
+    state["loader"].shuffle_indices()
 
     with open(trace, "a") as f:
       json.dump(meter_values,f)
       f.write("\n")
 
 
-    if val_loader is not None:
+    if valid_loader is not None:
       if meter_values["validation"]["loss"] < hook_state["best_loss"]:
             hook_state["best_loss"] = meter_values["validation"]["loss"]
 

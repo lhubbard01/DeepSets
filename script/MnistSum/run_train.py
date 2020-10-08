@@ -48,6 +48,7 @@ class Defaults:
         "learning_rate"       : 1e-4,
         "batch_size"          : 1,
         "acc"                 : 0.3,
+        "tv_split"            : True,
     }
     self.log = {
         "fields"              : "loss,acc",
@@ -112,10 +113,11 @@ parser.add_argument("--train.optimization_method",type=str,default=trainD["optim
 parser.add_argument("--train.learning_rate",type=float,default=trainD["learning_rate"],
                     help=f"learning rate to use during training, default={trainD['learning_rate']}")
 parser.add_argument("--train.batch_size",type=int,default=trainD["batch_size"])
+
 parser.add_argument("--train.acc", type=float, default=trainD["acc"], 
                     help="threshold at which to add a discrete unit to measure closeness in this regression (eg reg loss < 0.5, add one)")
 
-
+parser.add_argument("--train.tv_split",action="store_true", help="train and validation split of 20% valid, 80% train")
 
 
 
