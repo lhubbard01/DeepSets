@@ -1,4 +1,4 @@
-from tqdm import tqdm
+import tqdm
 class Engine:
   """A training time management abstraction. Adapted from torchnet
   and prototypical networks for few-shot learning, implemented by jake snell
@@ -60,7 +60,7 @@ class Engine:
 
 
       self.hooks["on_start_epoch"](state)
-      for i,(d,t) in tqdm(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
+      for i,(d,t) in tqdm.tqdm(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
             state["data"], state["targets"] = d, t
             state["optimizer"].zero_grad()
 
