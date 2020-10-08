@@ -24,7 +24,6 @@ class Defaults:
         "dataset"             : "mnist",
         "minimum_subset_size" : 2,
         "maximum_subset_size" : 10,
-        "train_validation"    : False,
     }
     self.model = {
         "name"                : "DeepSet",
@@ -48,7 +47,7 @@ class Defaults:
         "learning_rate"       : 1e-4,
         "batch_size"          : 1,
         "acc"                 : 0.3,
-        "tv_split"            : True,
+        "tv_split"            : False,
     }
     self.log = {
         "fields"              : "loss,acc",
@@ -73,8 +72,6 @@ parser.add_argument("--data.minimum_subset_size", type=int,default=dataD["minimu
                     help=f"the minimum subset size to be used during permutation invariance training default={dataD['minimum_subset_size']}")
 parser.add_argument("--data.maximum_subset_size",type=int,default=dataD["maximum_subset_size"],
                     help=f"the maxmimum subset size used during permutation invariance training, default={dataD['maximum_subset_size']}")
-parser.add_argument("--data.train_validation",action="store_true",
-                    help="flip this flag to train with a train validation split, default is false")
 
 #model
 modelD = defaults.model

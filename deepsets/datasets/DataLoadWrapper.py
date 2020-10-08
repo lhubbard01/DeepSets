@@ -45,8 +45,8 @@ class DataLoadWrapper:
     
     self.length = len(self.indices)
   
-  def __getitem__(self,index):
-    data = self.datamain[self.shuf(self.indices[index])]\
+  def __getitem__(self, index):
+    data = self.datamain[ self.shuf(self.indices[index]) ]\
                .clone()\
                .detach()\
                .to(dtype=torch.float32) / 255
@@ -73,7 +73,7 @@ class DataLoadWrapper:
     random.shuffle(index_list)
     return index_list
   
-  def generate_new_subsets(self, indices: list, data, targets):
+  def generate_new_subset(self, indices: list, data, targets):
     lis = [data[i] for i in indices]
     t   = sum([targets[i] for i in indices])
 
@@ -82,23 +82,23 @@ class DataLoadWrapper:
     return out.view(len(indices),1,28,28), t
 
 
-  def get_more(self, train_data, indices:list, min:int, max:int,count:int):
+  def get_more(self, train_data, indices: list, min: int, max: int, count :int):
     for i in range(count):
       indices += self.gen_indices(train_data.shape[0],train_data,min,max)
     return indices
 
-
-
   def gen_indices(self, dataset,dataN:int, min:int, max_setsize:int):
     x = dataN
+
     lis = []
     while x > max_setsize:
       o = random.randint(min,max_setsize)
       lis.append(o)
       x-=o
     lis.append(x)
+    
     lissubs = torch.utils.data.random_split(dataset,lis)
     print(f"{len(lissubs)} subsets generated\n")
+
     subsets_list = list(map(lambda x : x.indices, lissubs))
-    
     return subsets_list

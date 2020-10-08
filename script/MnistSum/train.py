@@ -170,7 +170,7 @@ def main(opt):
 
 
   def on_forward(state):
-    out = state["model"](state["data"].view(-1,1,784))
+    out = state["model"](state["data"].view(-1,1,28,28))
     loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to match the singular output
     return loss, {"loss":loss.item(), 
                   "acc" : (1 if (loss**(1/2) < opt["train.acc"]) else 0 )}
