@@ -1,4 +1,4 @@
-#!/bin/usr/python3
+#!/usr/bin/python3
 import argparse
 from train import main
 
@@ -114,7 +114,7 @@ parser.add_argument("--train.batch_size",type=int,default=trainD["batch_size"])
 parser.add_argument("--train.acc", type=float, default=trainD["acc"], 
                     help="threshold at which to add a discrete unit to measure closeness in this regression (eg reg loss < 0.5, add one)")
 
-parser.add_argument("--train.tv_split",action="store_true", help="train and validation split of 20% valid, 80% train")
+parser.add_argument("--train.tv_split",action="store_true", help="train and validation split of 20 valid, 80 train")
 
 
 
@@ -126,7 +126,9 @@ parser.add_argument("--log.fields",type=str,default=logD["fields"],
 parser.add_argument("--log.experiment_directory",type=str,default=logD["experiment_directory"],
                     help=f"where to store model data, options, saved generated subsets, etc. default={logD['experiment_directory']}")
 
+
+
 opt = vars(parser.parse_args())
+  
+
 main(opt)
-
-
