@@ -34,6 +34,7 @@ separator = "*" * 80
 
 def main(opt):
   opt["batch_size"] = opt["train.batch_size"]
+  opt["machine"] = (torch.device("cuda:0") if opt["data.cuda"] else torch.device("cpu"))
 
   if not os.path.isdir(opt['log.experiment_directory']):
     os.makedirs(opt['log.experiment_directory'])
@@ -181,22 +182,30 @@ def main(opt):
 
 
   def on_forward_regular(state):
-    out = state["model"](state["data"].view(-1,1,784)) #re-view the data along outermost tensor dim
+    out = state["model"](state["data"].view(-1,1,784)).to(opt["machine"])  #re-view the data along outermost tensor dim, send to respective machine
     loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to desired regression output, 
     #otherwise is correct loss, as a scalar, but exists per image in subset. This distributes the loss evenly across each image. 
+    
+
+
     return loss, {"loss":loss.item(), 
                   "acc" : (1 if (loss**(1/2) < opt["train.acc"]) else 0 )}
 
   def on_forward_conv_train(state):
-    out = state["model"](state["data"].view(-1,1,28,28)) #re-view the data along outermost tensor dim
+    out = state["model"](state["data"].view(-1,1,28,28)).to(opt["machine"]) #re-view the data along outermost tensor dim
     loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to desired regression output, 
     #otherwise is correct loss, as a scalar, but exists per image in subset. This distributes the loss evenly across each image. 
-    return loss, {"loss":loss.item(), 
-                  "acc" : accuracy_metric(loss)}
+    state["output"] = {"loss":loss.item(), 
+                       "acc" : accuracy_metric(loss)}
+    state["loss"] = loss
 
 
   engine.hooks["on_forward"] = on_forward_regular
  
+  def on_backward(state):
+    state["loss"].backward()
+    state["optimizer"].step()
+    state["optimizer"].zero_grad()
 
 
 
@@ -248,6 +257,7 @@ def main(opt):
                        os.path.join(opt["log.experiment_directory"],str(state["epoch"]) + "__" + opt["model.name"] + ".pt"))
             if opt["model.cuda"]:
               state["model"].cuda()
+
       else:
           state["model"].cpu()
           torch.save(state["model"],
@@ -255,6 +265,7 @@ def main(opt):
           
           if opt["data.cuda"]:
             state["model"].cuda()
+
     else:
           state["model"].cpu()
           torch.save(state["model"],

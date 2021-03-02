@@ -12,6 +12,18 @@ class Engine:
                   "on_forward_pre", "on_forward",
                   "on_backward",
                   "on_end_epoch", "on_end"
+  
+
+
+
+  
+
+
+
+
+  Note: User is expected to define :
+    1) optimizer behavior in the callbacks, including zeroing, stepping, etc
+    2) calling backward on the loss 
   """
   
   def __init__(self, notebook: bool = False):
@@ -24,10 +36,13 @@ class Engine:
 
     self.as_notebook = notebook
     if notebook:
-      self.train = self.train_nb
+      tqdm = tqdm.autonotebook.tqdm
     else:
-      self.train = self.train_reg
+      tqdm = tqdm.tqdm
+    self.train = self.train_reg
     """default to None so if used in training loop without having been hooked,will still run"""
+  
+
   def train_reg(self,**kwargs):
     state = {
         "model"         : kwargs["model"],
@@ -37,14 +52,10 @@ class Engine:
         "max_epoch"     : kwargs["max_epochs"],
         "name"          : kwargs["name"],
         "criterion"     : kwargs["criterion"],
-
         "epoch"         : kwargs["epoch"],
         "t"             : 0,
         "accuracy"      : 0,
-
         "stop"          : False,
-
-
         "optimizer"     : None,
         "output"        : None,
         "data"          : None, 
@@ -62,21 +73,17 @@ class Engine:
       self.hooks["on_start_epoch"](state)
       for i,(d,t) in tqdm.tqdm(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
             state["data"], state["targets"] = d, t
-            state["optimizer"].zero_grad()
-
             self.hooks["on_forward_pre"](state)
-
-            loss, state["output"] = self.hooks["on_forward"](state)
-            loss.backward()
+            self.hooks["on_forward"](state)
 
             self.hooks["on_backward"](state)
-            state["optimizer"].step()
             self.hooks["on_update"](state)
+
       self.hooks["on_end_epoch"](state)
     self.hooks["on_end"](state)
 
 
-  def train_nb(self,**kwargs):
+  """def train_nb(self,**kwargs):
     state = {
         "model"         : kwargs["model"],
         "loader"        : kwargs["loader"],
@@ -124,22 +131,4 @@ class Engine:
 
 
 
-"""def on_start(state):
-def on_start_epoch(state)
-def on_forward_pre(state)
-def on_forward(state)
-def on_backward(state)
-def on_end_epoch(state) 
-def on_end(state)
-class State(dict):
-  def __init__(self,list):
-    super(State, self).__init__()
-    [self[key]  for key in list]
-    self["model"]
-    self["t"]
-    self["max_epoch"]
-    self["criterion"]
-    self["loader"]
-    self["optimizer"]"""
-
-
+"""
