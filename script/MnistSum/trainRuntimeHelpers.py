@@ -17,8 +17,8 @@ from deepsets.model import deepset
 
 
 
-
 def gen_arch_phi(opt):
+  """Options for setting activations from command line, as well as a vanilla architecture"""
   act = opt["model.phi_activations"].lower()
   if act == "relu":      act = nn.ReLU
   elif act == "tanh":    act = nn.tanh
@@ -34,6 +34,7 @@ def gen_arch_phi(opt):
   return phi
 
 def gen_arch_rho(opt):
+  """Options for setting activations from command line, as well as a vanilla architecture"""
   act = opt["model.rho_activations"].lower()
   if act == "relu":
     act = nn.ReLU
@@ -67,21 +68,34 @@ def hyperparam(opt,model,name):
   #still returns self so is useful for method chaining
 
 def load_model(opt):
-  if not opt["model.path"]:
-    phi = gen_arch_phi(opt)
-    rho = gen_arch_rho(opt)
-    model = deepset.DeepSet(phi,rho)
-    #model = deepset.DeepSet(phi,rho)
-    if opt["model.cuda"]:
-      model.cuda()
-    else:
-      model.cpu()
-
-  else:
+  if not opt["model.set_phi"] and not opt["model.set_rho"] and opt["model.path"]:
     f = open(opt["model.path"],"rb")
     model = torch.load(f)
     f.close()
+    return model
 
+  rho = phi = None
+
+  if opt["model.set_phi"]:
+    f = open(opt["model.set_phi"],"rb")
+    phi = torch.load(f)
+    f.close()
+  else:
+      phi = gen_arch_phi(opt)
+
+  if opt["model.set_rho"] :
+    f = open(opt["model.set_rho"], "rb")
+    rho = torch.load(f)
+    f.close()
+  else:
+      rho = gen_arch_rho(opt)
+
+  model = deepset.DeepSet(phi,rho)
+
+  if opt["model.cuda"]:
+    model.cuda()
+  else:
+    model.cpu()
   model.train()
   return model
 

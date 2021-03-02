@@ -25,15 +25,9 @@ from trainRuntimeHelpers import *
 from deepsets.datasets.DataLoadWrapper import DataLoadWrapper, load_mnist_dataset
 
 
-
-
-
 """main takes in parsed command line arguments, which have either been overriden 
    by specified assignments or tags, or are their default. main hooks callbacks to
    various defined hooks inside of the engine. """
-
-
-
 
 
 separator = "*" * 80
@@ -56,7 +50,25 @@ def main(opt):
 
   
 
+  def regression_target_heuristic(loss):
+    return (1 if (loss**(1/2) < opt["train.acc"]) else 0 )
 
+  def accuracy_callback_hook():
+    """Regression accuracy metric can be set from command line, as a function
+     called from a file, located in script directorywhile :
+       pass, of the same name. The callback expects a function signature of the form 
+     function(loss: float) -> float
+    """
+
+    if opt["train.accuracy_metric"] is None:
+      accuracy_metric = regression_target_heuristic
+    else:
+      exec("from " + opt["train.accuracy_metric"] + " import " + opt["train.accuracy_metric"] \
+            + ";  accuracy_metric = " + opt["train.accuracy_metric"])
+    print(accuracy_metric)
+
+
+    
   def train_load(opt):
     if opt["train.reuse"] is True:
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "rb") as f:
@@ -66,7 +78,8 @@ def main(opt):
       train_loader = DataLoadWrapper(dataset.data,
                                      dataset.targets, 
                                      minset = 2,
-                                     maxset = 10 )
+                                     maxset = 10,
+                                     )
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)
 
@@ -166,21 +179,28 @@ def main(opt):
 
 
 
-  
 
-
-  def on_forward(state):
-    out = state["model"](state["data"].view(-1,1,28,28))
-    loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to match the singular output
+  def on_forward_regular(state):
+    out = state["model"](state["data"].view(-1,1,784)) #re-view the data along outermost tensor dim
+    loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to desired regression output, 
+    #otherwise is correct loss, as a scalar, but exists per image in subset. This distributes the loss evenly across each image. 
     return loss, {"loss":loss.item(), 
                   "acc" : (1 if (loss**(1/2) < opt["train.acc"]) else 0 )}
 
-  engine.hooks["on_forward"] = on_forward
+  def on_forward_conv_train(state):
+    out = state["model"](state["data"].view(-1,1,28,28)) #re-view the data along outermost tensor dim
+    loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to desired regression output, 
+    #otherwise is correct loss, as a scalar, but exists per image in subset. This distributes the loss evenly across each image. 
+    return loss, {"loss":loss.item(), 
+                  "acc" : accuracy_metric(loss)}
+
+
+  engine.hooks["on_forward"] = on_forward_regular
  
 
 
 
-  def on_update(state):
+  def on_update(state): 
     for field, meter, in meters["train"].items():
       meter.add(state["output"][field])
   engine.hooks["on_update"] = on_update 
@@ -194,20 +214,21 @@ def main(opt):
       if "best_loss" not in hook_state:
         hook_state["best_loss"] = np.inf
       
+      # validate the performance on hold out data. 
       model_utils.evaluate(state,
                              valid_loader,
                              meters["validation"],
                              desc="Epoch {:d} validation run ".format(state["epoch"]))
 
-    meter_values = log_utils.extract_meter_values(meters)
+    meter_values = log_utils.extract_meter_values(meters) #torchnet meter class maintains performance along diff metrics. 
     update_str = "Epoch {:02d}: {:s}".format(state["epoch"],
-                              log_utils.render_meter_values(meter_values))
+                              log_utils.render_meter_values(meter_values)) # output meter values to be more readable
     
     print(update_str)
 
     meter_values["epoch"] = state["epoch"]
     
-    state["loader"].shuffle_indices()
+    state["loader"].shuffle_indices() #shuffle indices, i.e. positional order of subsets within dataloader. Does not affect datamain loc
 
     with open(trace, "a") as f:
       json.dump(meter_values,f)
@@ -216,11 +237,13 @@ def main(opt):
 
     if valid_loader is not None:
       if meter_values["validation"]["loss"] < hook_state["best_loss"]:
-            hook_state["best_loss"] = meter_values["validation"]["loss"]
+            hook_state["best_loss"] = meter_values["validation"]["loss"] # performance maintenance
 
             print("best model:  loss = {:0.6f}".format(hook_state["best_loss"]))
 
             state["model"].cpu()
+
+            #write model state to the experiment directory, entry labelled through epoch __ modelname 
             torch.save(state["model"], 
                        os.path.join(opt["log.experiment_directory"],str(state["epoch"]) + "__" + opt["model.name"] + ".pt"))
             if opt["model.cuda"]:

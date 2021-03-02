@@ -7,6 +7,8 @@ setup(
       author_email="lhubbard@pdx.edu",
       license="MIT",
       packages=["deepsets","deepsets.model","deepsets.utils", "deepsets.datasets"],
+      
+
       install_requires=[
         "torch",
         "matplotlib",
@@ -15,5 +17,9 @@ setup(
         "pillow",
         "torchnet",
         "numpy",
-        ]
+        ],
+
+
+
+        scripts=["scripts/MnistSum/run_train", "scripts/MnistSum/eval"]
       )
