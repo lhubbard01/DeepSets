@@ -34,7 +34,7 @@ separator = "*" * 80
 
 def main(opt):
   opt["batch_size"] = opt["train.batch_size"]
-  opt["machine"] = (torch.device("cuda:0") if opt["data.cuda"] else torch.device("cpu"))
+  opt["machine"] = (torch.device("cuda:0") if opt["model.cuda"] else torch.device("cpu"))
 
   if not os.path.isdir(opt['log.experiment_directory']):
     os.makedirs(opt['log.experiment_directory'])
@@ -263,7 +263,7 @@ def main(opt):
           torch.save(state["model"],
                      os.path.join(opt["log.experiment_directory"], str(state["epoch"]) + "__" + opt["model.name"] + ".pt"))
           
-          if opt["data.cuda"]:
+          if opt["model.cuda"]:
             state["model"].cuda()
 
     else:
