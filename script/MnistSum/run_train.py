@@ -36,6 +36,7 @@ class Defaults:
         "acc"                 : 0.3,
         "tv_split"            : False,
         "accuracy_metric"     : None
+        "notebook"            : False,
     }
     self.log = {
         "fields"              : "loss,acc",
@@ -120,6 +121,9 @@ parser.add_argument("--train.tv_split",action="store_true", help="train and vali
 
 parser.add_argument("--train.accuracy_metric", type=str, default = trainD["accuracy_metric"],
         help=f"a file containing a function of the same name, to calculate accuracy of model's predictions, default={trainD['accuracy_metric']}")
+
+parser.add_argument("--train.notebook", action = "store_true",
+        help=f"if this model is being launched from a terminal instance in notebook, flag sets it to true default={trainD['notebook']}")
 
 #log
 logD = defaults.log
