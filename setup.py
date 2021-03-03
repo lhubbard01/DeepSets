@@ -21,5 +21,5 @@ setup(
 
 
 
-        scripts=["scripts/MnistSum/run_train", "scripts/MnistSum/eval"]
+        scripts=["script/MnistSum/run_train"] #"scripts/MnistSum/eval"]
       )

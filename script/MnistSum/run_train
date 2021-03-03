@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# _run_train tab completion file
+_run_train() 
+{
+  local cur
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  case "$cur" in
+    -*)
+    COMPREPLY=( $( compgen -W "--data.path  --data.dataset  --data.minimum_subset_size  --data.maximum_subset_size  --model.name  --model.phi  --model.rho  --model.path  --model.cuda  --model.freeze_phi  --model.freeze_rho  --model.phi_activations  --model.rho_activations  --model.deepset_activations  --train.epochs  --train.visuals  --train.reuse  --train.optimization_method  --train.cuda  --train.learning_rate  --train.batch_size  --train.acc  --train.tv_split  --log.fields  --log.experiment_directory  "-- $cur ) );;
+    esac
+    return 0;
+};
+complete -F _run_train -o filenames run_train.py
