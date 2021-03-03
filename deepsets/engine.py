@@ -34,7 +34,7 @@ class Engine:
     hook_names = ["on_start", "on_start_epoch",
                   "on_forward_pre", "on_forward",
                   "on_backward",
-                  "on_end_epoch", "on_end"]
+                  "on_end_epoch", "on_end", "on_update"]
     self.hooks = {k : lambda state: None for k in hook_names } 
     self.as_notebook = notebook
     if notebook:
