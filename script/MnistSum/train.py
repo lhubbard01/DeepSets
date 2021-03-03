@@ -34,14 +34,17 @@ separator = "*" * 80
 
 def main(opt):
   opt["batch_size"] = opt["train.batch_size"]
-  opt["machine"] = (torch.device("cuda:0") if opt["model.cuda"] else torch.device("cpu"))
 
   if not os.path.isdir(opt['log.experiment_directory']):
     os.makedirs(opt['log.experiment_directory'])
 
   with open(os.path.join(opt['log.experiment_directory'], 'options.json'),'w') as f:
-    json.dump(opt,f)
+    try:
+      json.dump(opt,f)
+    except TypeError as t:
+      print(t); 
     f.write("\n"+separator+"\n")
+  opt["machine"] = (torch.device("cuda:0") if opt["model.cuda"] else torch.device("cpu"))
 
 
   trace = os.path.join(opt["log.experiment_directory"], "trace_file.txt")
