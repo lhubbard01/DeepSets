@@ -1,3 +1,6 @@
+
+import tqdm
+
 class Engine:
   """A training time management abstraction. Adapted from torchnet
   and prototypical networks for few-shot learning, implemented by jake snell
@@ -33,10 +36,9 @@ class Engine:
                   "on_backward",
                   "on_end_epoch", "on_end"]
     self.hooks = {k : lambda state: None for k in hook_names } 
-    self.tqdmcb = tqdm.tqdm
     self.as_notebook = notebook
     if notebook:
-      self.tqdmdb = tqdm.autonotebook.tqdm
+      self.tqdmcb = tqdm.autonotebook.tqdm
     else:
       self.tqdmcb = tqdm.tqdm
     self.train = self.train_reg
@@ -128,7 +130,4 @@ class Engine:
             self.hooks["on_update"](state)
       self.hooks["on_end_epoch"](state)
     self.hooks["on_end"](state)
-
-
-
 """
