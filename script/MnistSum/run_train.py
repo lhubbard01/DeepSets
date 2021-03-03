@@ -35,7 +35,7 @@ class Defaults:
         "batch_size"          : 1,
         "acc"                 : 0.3,
         "tv_split"            : False,
-        "accuracy_metric"     : None
+        "accuracy_metric"     : None,
         "notebook"            : False,
     }
     self.log = {

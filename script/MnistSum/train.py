@@ -152,7 +152,7 @@ def main(opt):
   elif opt["train.optimization_method"].lower() == "sgd": opt["optimization_method"] = torch.optim.SGD
 
   notebook = False
-  if opts["train.notebook"]:
+  if opt["train.notebook"]:
     notebook = True
   engine = Engine(notebook)
   
