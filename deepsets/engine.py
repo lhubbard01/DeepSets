@@ -1,4 +1,3 @@
-import tqdm
 class Engine:
   """A training time management abstraction. Adapted from torchnet
   and prototypical networks for few-shot learning, implemented by jake snell
@@ -25,6 +24,7 @@ class Engine:
     1) optimizer behavior in the callbacks, including zeroing, stepping, etc
     2) calling backward on the loss 
   """
+  import tqdm
   
   def __init__(self, notebook: bool = False):
     """suggested hooks to attach"""
@@ -33,12 +33,12 @@ class Engine:
                   "on_backward",
                   "on_end_epoch", "on_end"]
     self.hooks = {k : lambda state: None for k in hook_names } 
-
+    self.tqdmcb = tqdm.tqdm
     self.as_notebook = notebook
     if notebook:
-      tqdm = tqdm.autonotebook.tqdm
+      self.tqdmdb = tqdm.autonotebook.tqdm
     else:
-      tqdm = tqdm.tqdm
+      self.tqdmcb = tqdm.tqdm
     self.train = self.train_reg
     """default to None so if used in training loop without having been hooked,will still run"""
   
@@ -71,7 +71,7 @@ class Engine:
 
 
       self.hooks["on_start_epoch"](state)
-      for i,(d,t) in tqdm.tqdm(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
+      for i,(d,t) in self.tqdmcb(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
             state["data"], state["targets"] = d, t
             self.hooks["on_forward_pre"](state)
             self.hooks["on_forward"](state)
