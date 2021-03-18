@@ -48,9 +48,9 @@ class DataLoadWrapper:
     if indices is not None: 
       self.indices = indices
     elif num_subsets != 0:
-      self.indices = self.gen_indices_disjoint(self.datamain, self.datamain.size(0), 2, 10)
-    else:
       self.indices = self.gen_indices_with_replacement(self.datamain, self.datamain.size(0), 2, 10, num_subsets)
+    else:
+      self.indices = self.gen_indices_disjoint(self.datamain, self.datamain.size(0), 2, 10)
     self.length = len(self.indices)
   
   def __getitem__(self, index):
