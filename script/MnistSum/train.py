@@ -193,8 +193,10 @@ def main(opt):
     
 
 
-    return loss, {"loss":loss.item(), 
+    state["output"] =  {"loss":loss.item(), 
                   "acc" : (1 if (loss**(1/2) < opt["train.acc"]) else 0 )}
+    state["loss"] = loss
+
 
   def on_forward_conv_train(state):
     out = state["model"](state["data"].view(-1,1,28,28)).to(opt["machine"]) #re-view the data along outermost tensor dim
@@ -211,7 +213,7 @@ def main(opt):
     state["loss"].backward()
     state["optimizer"].step()
     state["optimizer"].zero_grad()
-
+  engine.hooks["on_backward"] = on_backward
 
 
   def on_update(state): 

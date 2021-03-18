@@ -49,7 +49,7 @@ def gen_arch_rho(opt):
   else:
     raise ValueError(f"unexpected activation for rho {act}")
 
-  return deepset.Rho(nn.ModuleList([nn.Linear(10,1)]))
+  return deepset.Rho(nn.ModuleList([nn.Linear(10,3), nn.ReLU(), nn.Linear(3,1)]))
 
 
 
