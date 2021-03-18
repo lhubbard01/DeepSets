@@ -83,6 +83,7 @@ def main(opt):
                                      dataset.targets, 
                                      minset = 2,
                                      maxset = 10,
+                                     num_subsets = opt["data.num_subsets"]
                                      )
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)

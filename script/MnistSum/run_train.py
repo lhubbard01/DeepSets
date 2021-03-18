@@ -11,6 +11,7 @@ class Defaults:
         "dataset"             : "mnist",
         "minimum_subset_size" : 2,
         "maximum_subset_size" : 10,
+        "num_subsets": 0,
     }
     self.model = {
         "name"                : "DeepSet",
@@ -53,6 +54,8 @@ defaults = Defaults()
 parser = argparse.ArgumentParser(description="Train DeepSet on sum mapping from mnist")
 
 dataD = defaults.data
+parser.add_argument("--data.num_subsets",type=str,default=dataD["num_subsets"],
+                    help=f"generates this many subsets, which is used in lieu of entirely disjoint, nonoverlapping subsets. 0 here means generate disjoint subsets. no upper bound on this. default={dataD['num_subsets']}")
 parser.add_argument("--data.path",type=str,default=dataD["path"],
                     help=f"the path from which to read data at train time, default={dataD['path']}")
 
