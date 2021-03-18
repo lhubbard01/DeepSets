@@ -39,7 +39,6 @@ class Engine:
       self.tqdmcb = tqdm.autonotebook.tqdm
     else:
       self.tqdmcb = tqdm.tqdm
-    self.train = self.train_reg
     """default to None so if used in training loop without having been hooked,will still run"""
   
 
