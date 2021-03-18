@@ -1,4 +1,3 @@
-
 import tqdm
 
 class Engine:
@@ -27,7 +26,6 @@ class Engine:
     1) optimizer behavior in the callbacks, including zeroing, stepping, etc
     2) calling backward on the loss 
   """
-  import tqdm
   
   def __init__(self, notebook: bool = False):
     """suggested hooks to attach"""
@@ -45,7 +43,7 @@ class Engine:
     """default to None so if used in training loop without having been hooked,will still run"""
   
 
-  def train_reg(self,**kwargs):
+  def train(self,**kwargs):
     state = {
         "model"         : kwargs["model"],
         "loader"        : kwargs["loader"],
@@ -70,64 +68,13 @@ class Engine:
         )
     self.hooks["on_start"](state)
     while state["epoch"] < state["max_epoch"] and not state["stop"]:
-
-
       self.hooks["on_start_epoch"](state)
       for i,(d,t) in self.tqdmcb(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
             state["data"], state["targets"] = d, t
             self.hooks["on_forward_pre"](state)
             self.hooks["on_forward"](state)
-
             self.hooks["on_backward"](state)
             self.hooks["on_update"](state)
-
       self.hooks["on_end_epoch"](state)
     self.hooks["on_end"](state)
 
-
-  """def train_nb(self,**kwargs):
-    state = {
-        "model"         : kwargs["model"],
-        "loader"        : kwargs["loader"],
-        "optim_method"  : kwargs["optimization_method"],
-        "optim_config"  : kwargs["optim_config"],
-        "max_epoch"     : kwargs["max_epochs"],
-        "name"          : kwargs["name"],
-        "criterion"     : kwargs["criterion"],
-
-        "epoch"         : kwargs["epoch"],
-        "t"             : 0,
-        "accuracy"      : 0,
-
-        "stop"          : False,
-
-
-        "optimizer"     : None,
-        "output"        : None,
-        "data"          : None, 
-        "targets"       : None #only for reshaping in forward_pre hook
-        }
-
-    state["optimizer"] = state["optim_method"](
-        state["model"].parameters(), 
-        **state["optim_config"]
-        )
-    self.hooks["on_start"](state)
-    while state["epoch"] < state["max_epoch"] and not state["stop"]:
-
-      self.hooks["on_start_epoch"](state)
-      for i,(d,t) in tqdm.autonotebook.tqdm(enumerate(state["loader"]), desc="epoch {:d} training".format(state["epoch"])): #retrieve subset structures
-            state["data"], state["targets"] = d, t
-            state["optimizer"].zero_grad()
-
-            self.hooks["on_forward_pre"](state)
-
-            loss, state["output"] = self.hooks["on_forward"](state)
-            loss.backward()
-
-            self.hooks["on_backward"](state)
-            state["optimizer"].step()
-            self.hooks["on_update"](state)
-      self.hooks["on_end_epoch"](state)
-    self.hooks["on_end"](state)
-"""
