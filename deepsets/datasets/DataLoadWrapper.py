@@ -105,7 +105,7 @@ class DataLoadWrapper:
       indices += self.gen_indices(train_data.shape[0], train_data, min, max)
     return indices
 
-  def gen_indices_with_replacement(self, dataset, dataset_size: int, min: int, max: int, , number_of_subsets: int):
+  def gen_indices_with_replacement(self, dataset, dataset_size: int, min: int, max: int, number_of_subsets: int):
     """ This method allows for the generation of a specified number of subsets, created from with-replacement sampling 
       @dataset_size - upper bounds the random sampling
       @number_of_subsets - the number of subsets to be generated through with replacement datapoint sampling  
