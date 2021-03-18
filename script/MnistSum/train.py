@@ -52,8 +52,6 @@ def main(opt):
 
   dataset = load_mnist_dataset(root="./mnist/",train=True,download=True)
 
-  
-
   def regression_target_heuristic(loss):
     return (1 if (loss**(1/2) < opt["train.acc"]) else 0 )
 
@@ -86,7 +84,7 @@ def main(opt):
                                      num_subsets = opt["data.num_subsets"]
                                      )
       
-      train_loader = torch.utils.data.RandomSampler(train_loader)
+      train_loader = torch.utils.data.DataLoader(train_loader, sampler = torch.utils.data.RandomSampler(train_loader, replacement = True))
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)
 
@@ -143,9 +141,6 @@ def main(opt):
     train_loader, valid_loader = gen_tv_split(opt) 
 
 
-
-
-
   meters ={"train" : {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}}
   if valid_loader is not None:
     meters["validation"] = {field: tnt.meter.AverageValueMeter() for field in opt["log.fields"]}
@@ -159,15 +154,8 @@ def main(opt):
     notebook = True
   engine = Engine(notebook)
   
+  
 
-
-
-
-
-
-
-  def on_start_with_visuals(state):
-    return None
 
   def on_start(state):
     if opt["model.cuda"]:
@@ -179,14 +167,11 @@ def main(opt):
   engine.hooks["on_start"] = on_start
 
 
-  
   def on_start_epoch(state):
     for split, split_meters in meters.items():
       for field,meter in split_meters.items():
         meter.reset()
   engine.hooks["on_start_epoch"] = on_start_epoch
-
-
 
 
   def on_forward_regular(state):
@@ -221,9 +206,6 @@ def main(opt):
     for field, meter, in meters["train"].items():
       meter.add(state["output"][field])
   engine.hooks["on_update"] = on_update 
-
-
-
 
 
   def on_end_epoch(hook_state, state):
