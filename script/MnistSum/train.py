@@ -190,9 +190,7 @@ def main(opt):
     out = state["model"](state["data"].view(-1,1,784)).to(opt["machine"])  #re-view the data along outermost tensor dim, send to respective machine
     loss = state["criterion"](out, state["targets"])/state["targets"].size(0) #rescales gradient magnitude to desired regression output, 
     #otherwise is correct loss, as a scalar, but exists per image in subset. This distributes the loss evenly across each image. 
-    
-
-
+    state["model_out"] = out
     state["output"] =  {"loss":loss.item(), 
                   "acc" : (1 if (loss**(1/2) < opt["train.acc"]) else 0 )}
     state["loss"] = loss
@@ -231,7 +229,7 @@ def main(opt):
         hook_state["best_loss"] = np.inf
       
       # validate the performance on hold out data. 
-      model_utils.evaluate(state,
+      model_utils.evaluate(state,engine,opt,
                              valid_loader,
                              meters["validation"],
                              desc="Epoch {:d} validation run ".format(state["epoch"]))
