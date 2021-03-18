@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision as tv
 import copy
 import random
-
+from torch.utils.data import Dataset
 
 
 
@@ -22,7 +22,7 @@ def load_mnist_dataset(root:str,
                                )
   return mnist_ds
 
-class DataLoadWrapper:
+class DataLoadWrapper(Dataset):
   """This is a standin to be passed to the engine via the state dict.
    Target_callback allows for defining own label generation at runtime"""
   def __init__(self,
@@ -72,11 +72,14 @@ class DataLoadWrapper:
                .detach()\
                .to(dtype=torch.float32) / 255 # treat data as their own memory, normalize
 
-
     targets = self.target_callback(self, index, data)
     return data, targets
   
 
+  
+
+  def __len__(self):
+    return len(self.indices)
   def shuffle_indices(self):
     """shuffle the actual subset locations"""
     indices = self.indices
@@ -156,9 +159,6 @@ def label_sum(obj, index, data):
   return obj.targets[obj.indices[index]].sum() \
                     * torch.ones(data.size(0),
                                  dtype = torch.float32)
-
-
-
 import functools
 def label_mult(obj, index, data):
   out = int(functools.reduce(lambda x, y: x * y, obj.targets[obj.indices[index]]))

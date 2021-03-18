@@ -85,6 +85,8 @@ def main(opt):
                                      maxset = 10,
                                      num_subsets = opt["data.num_subsets"]
                                      )
+      
+      train_loader = torch.utils.data.RandomSampler(train_loader)
       with open(os.path.join(opt["log.experiment_directory"], "training_set"), "wb") as f:
         pickle.dump(train_loader,f)
 
